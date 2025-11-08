@@ -209,12 +209,14 @@ impl Inventory {
             
             match &effect {
                 ConsumableEffect::DamageBoost(amount, duration) => {
-                    self.temp_damage_boost = *amount;
-                    self.boost_turns_remaining = *duration;
+                    // Add to existing boost instead of overwriting
+                    self.temp_damage_boost += *amount;
+                    self.boost_turns_remaining = self.boost_turns_remaining.max(*duration);
                 }
                 ConsumableEffect::DefenseBoost(amount, duration) => {
-                    self.temp_defense_boost = *amount;
-                    self.boost_turns_remaining = *duration;
+                    // Add to existing boost instead of overwriting
+                    self.temp_defense_boost += *amount;
+                    self.boost_turns_remaining = self.boost_turns_remaining.max(*duration);
                 }
                 _ => {}
             }

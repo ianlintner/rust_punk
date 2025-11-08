@@ -471,19 +471,21 @@ impl GameState {
         let player_pos = self.player.position;
         let mut scavenged = false;
         let mut found_items = Vec::new();
+        let mut items_picked_up = false;
 
         for dumpster in &mut self.dumpsters {
             if dumpster.position.x == player_pos.x
                 && dumpster.position.y == player_pos.y
                 && dumpster.has_items
             {
-                dumpster.has_items = false;
                 scavenged = true;
                 
                 // Check for bolt cutters first
                 if dumpster.has_bolt_cutters {
                     self.player.inventory.bolt_cutters.found = true;
                     found_items.push("Bolt Cutters! (You can now cut the chain!)".to_string());
+                    dumpster.has_bolt_cutters = false;
+                    items_picked_up = true;
                 }
                 
                 // Pick up weapon if slot is empty
@@ -494,6 +496,7 @@ impl GameState {
                     } else {
                         found_items.push(format!("Found {}! (+{} damage)", weapon.name, weapon.damage_bonus));
                         self.player.inventory.weapon = Some(weapon);
+                        items_picked_up = true;
                     }
                 }
                 
@@ -505,6 +508,7 @@ impl GameState {
                     } else {
                         found_items.push(format!("Found {}! (+{} defense)", armor.name, armor.defense_bonus));
                         self.player.inventory.armor = Some(armor);
+                        items_picked_up = true;
                     }
                 }
                 
@@ -516,14 +520,25 @@ impl GameState {
                     } else {
                         found_items.push(format!("Found {}! (Press E to use)", consumable.name));
                         self.player.inventory.consumable = Some(consumable);
+                        items_picked_up = true;
                     }
+                }
+                
+                // Only mark as scavenged if at least one item was picked up or no items remain
+                let has_remaining_items = dumpster.item_weapon.is_some() 
+                    || dumpster.item_armor.is_some() 
+                    || dumpster.item_consumable.is_some()
+                    || dumpster.has_bolt_cutters;
+                
+                if items_picked_up || !has_remaining_items {
+                    dumpster.has_items = false;
                 }
                 
                 break;
             }
         }
 
-        if scavenged {
+        if scavenged && items_picked_up {
             self.player.scavenged_items += 1;
             self.add_message(format!(
                 "Scavenged dumpster! ({}/3)",
@@ -543,6 +558,12 @@ impl GameState {
             if self.player.scavenged_items >= 3 {
                 self.mode = GameMode::LevelComplete;
                 self.add_message("All dumpsters scavenged! Find the exit.".to_string());
+            }
+        } else if scavenged && !items_picked_up {
+            // Player found a dumpster but inventory was full
+            self.add_message("Your inventory is full! Drop items to pick up more.".to_string());
+            for item_msg in found_items {
+                self.add_message(item_msg);
             }
         }
     }

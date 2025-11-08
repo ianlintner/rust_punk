@@ -347,7 +347,7 @@ impl Renderer {
             Print(&weapon_text),
         )?;
         
-        let text_len = weapon_text.len() + 1;
+        let text_len = weapon_text.chars().count() + 1;
         for _ in text_len..(self.width as usize - 2) {
             execute!(stdout(), Print(" "))?;
         }
@@ -434,7 +434,7 @@ impl Renderer {
             Print(&cutters_text),
         )?;
         
-        let text_len = cutters_text.len() + 1;
+        let text_len = cutters_text.chars().count() + 1;
         for _ in text_len..(self.width as usize - 2) {
             execute!(stdout(), Print(" "))?;
         }
