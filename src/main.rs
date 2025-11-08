@@ -35,15 +35,14 @@ fn game_loop(game: &mut GameState, renderer: &Renderer) -> Result<()> {
         renderer.render(game)?;
 
         // Handle input
-        if event::poll(Duration::from_millis(100))? {
-            if let Event::Key(key_event) = event::read()? {
-                match key_event.code {
-                    KeyCode::Char('q') | KeyCode::Esc => {
-                        break;
-                    }
-                    _ => {
-                        game.handle_input(key_event);
-                    }
+        if event::poll(Duration::from_millis(100))?
+            && let Event::Key(key_event) = event::read()? {
+            match key_event.code {
+                KeyCode::Char('q') | KeyCode::Esc => {
+                    break;
+                }
+                _ => {
+                    game.handle_input(key_event);
                 }
             }
         }
@@ -55,12 +54,10 @@ fn game_loop(game: &mut GameState, renderer: &Renderer) -> Result<()> {
                 
                 // Wait for Q to quit
                 loop {
-                    if event::poll(Duration::from_millis(100))? {
-                        if let Event::Key(key_event) = event::read()? {
-                            if matches!(key_event.code, KeyCode::Char('q') | KeyCode::Esc) {
-                                return Ok(());
-                            }
-                        }
+                    if event::poll(Duration::from_millis(100))?
+                        && let Event::Key(key_event) = event::read()?
+                        && matches!(key_event.code, KeyCode::Char('q') | KeyCode::Esc) {
+                        return Ok(());
                     }
                 }
             }

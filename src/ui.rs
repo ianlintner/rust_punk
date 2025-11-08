@@ -10,6 +10,7 @@ use crate::game::{GameMode, GameState};
 
 pub struct Renderer {
     pub width: u16,
+    #[allow(dead_code)]
     pub height: u16,
 }
 
@@ -142,16 +143,15 @@ impl Renderer {
                 }
 
                 // Draw borders
-                if !rendered {
-                    if x == 0 || x == game.width - 1 || y == 0 || y == game.height - 1 {
-                        execute!(
-                            stdout(),
-                            SetForegroundColor(Color::DarkGrey),
-                            Print("#"),
-                            ResetColor
-                        )?;
-                        rendered = true;
-                    }
+                if !rendered
+                    && (x == 0 || x == game.width - 1 || y == 0 || y == game.height - 1) {
+                    execute!(
+                        stdout(),
+                        SetForegroundColor(Color::DarkGrey),
+                        Print("#"),
+                        ResetColor
+                    )?;
+                    rendered = true;
                 }
 
                 // Draw ground
@@ -235,38 +235,37 @@ impl Renderer {
         )?;
 
         // Combat mode indicator
-        if let GameMode::Combat(idx) = game.mode {
-            if idx < game.enemies.len() {
-                let enemy = &game.enemies[idx];
-                execute!(
-                    stdout(),
-                    SetForegroundColor(Color::DarkGrey),
-                    Print("║"),
-                    ResetColor,
-                    Print(" COMBAT! "),
-                    SetForegroundColor(Color::Red),
-                    Print(format!("{}", enemy.enemy_type)),
-                    ResetColor,
-                    Print(format!(" HP: {}/{}", enemy.health, enemy.max_health)),
-                )?;
+        if let GameMode::Combat(idx) = game.mode
+            && idx < game.enemies.len() {
+            let enemy = &game.enemies[idx];
+            execute!(
+                stdout(),
+                SetForegroundColor(Color::DarkGrey),
+                Print("║"),
+                ResetColor,
+                Print(" COMBAT! "),
+                SetForegroundColor(Color::Red),
+                Print(format!("{}", enemy.enemy_type)),
+                ResetColor,
+                Print(format!(" HP: {}/{}", enemy.health, enemy.max_health)),
+            )?;
 
-                let combat_text_len = format!(
-                    " COMBAT! {} HP: {}/{}",
-                    enemy.enemy_type, enemy.health, enemy.max_health
-                )
-                .len();
-                for _ in combat_text_len..(self.width as usize - 2) {
-                    execute!(stdout(), Print(" "))?;
-                }
-
-                execute!(
-                    stdout(),
-                    SetForegroundColor(Color::DarkGrey),
-                    Print("║"),
-                    ResetColor,
-                    Print("\r\n")
-                )?;
+            let combat_text_len = format!(
+                " COMBAT! {} HP: {}/{}",
+                enemy.enemy_type, enemy.health, enemy.max_health
+            )
+            .len();
+            for _ in combat_text_len..(self.width as usize - 2) {
+                execute!(stdout(), Print(" "))?;
             }
+
+            execute!(
+                stdout(),
+                SetForegroundColor(Color::DarkGrey),
+                Print("║"),
+                ResetColor,
+                Print("\r\n")
+            )?;
         }
 
         // Messages
