@@ -1,4 +1,5 @@
 mod game;
+mod items;
 mod ui;
 
 use crossterm::event::{self, Event, KeyCode};
