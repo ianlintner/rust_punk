@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  formatting:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt --check
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        run: cargo build --verbose --release
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run tests
+        run: cargo test --verbose
+
+  clippy:
+    name: Clippy Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  screenshot:
+    name: Generate Screenshot
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      
+      - name: Run screenshot script
+        run: |
+          chmod +x scripts/screenshot.sh
+          ./scripts/screenshot.sh
+          
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: game-screenshot
+          path: game_output.txt
+          if-no-files-found: warn

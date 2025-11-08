@@ -41,6 +41,32 @@ cargo run --release
 cargo check
 ```
 
+## Development
+
+### Testing & Quality Checks
+
+```bash
+# Run tests
+cargo test
+
+# Check formatting
+cargo fmt --check
+
+# Run linter
+cargo clippy --all-targets --all-features -- -D warnings
+```
+
+### Continuous Integration
+
+This project uses GitHub Actions for CI. All pull requests are automatically tested for:
+- Code formatting (`cargo fmt`)
+- Successful build (`cargo build`)
+- Passing tests (`cargo test`)
+- Linting (`cargo clippy`)
+- Screenshot generation
+
+See [.github/README.md](.github/README.md) for more details.
+
 ## Dependencies
 
 - `crossterm` - Cross-platform terminal manipulation

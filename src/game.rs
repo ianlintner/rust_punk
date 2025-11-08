@@ -213,7 +213,7 @@ mod tests {
         assert!(game.player.is_alive());
         assert_eq!(game.player.scavenged_items, 0);
         assert_eq!(game.dumpsters.len(), 3);
-        assert!(game.enemies.len() > 0);
+        assert!(!game.enemies.is_empty());
         assert_eq!(game.mode, GameMode::Exploring);
     }
 
