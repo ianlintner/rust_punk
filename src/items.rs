@@ -22,7 +22,9 @@ impl fmt::Display for ItemRarity {
 pub struct Weapon {
     pub name: String,
     pub damage_bonus: i32,
+    #[allow(dead_code)]
     pub rarity: ItemRarity,
+    #[allow(dead_code)]
     pub description: String,
 }
 
@@ -67,7 +69,9 @@ impl Weapon {
 pub struct Armor {
     pub name: String,
     pub defense_bonus: i32,
+    #[allow(dead_code)]
     pub rarity: ItemRarity,
+    #[allow(dead_code)]
     pub description: String,
 }
 
@@ -119,6 +123,7 @@ pub enum ConsumableEffect {
 pub struct Consumable {
     pub name: String,
     pub effect: ConsumableEffect,
+    #[allow(dead_code)]
     pub description: String,
 }
 
