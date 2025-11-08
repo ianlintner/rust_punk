@@ -1,10 +1,9 @@
 use crossterm::{
-    cursor,
-    execute,
+    cursor, execute,
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, Clear, ClearType},
 };
-use std::io::{stdout, Result, Write};
+use std::io::{Result, Write, stdout};
 
 use crate::game::{GameMode, GameState};
 
@@ -36,11 +35,7 @@ impl Renderer {
 
     fn render_game_world(&self, game: &GameState) -> Result<()> {
         // Draw top border and title
-        execute!(
-            stdout(),
-            SetForegroundColor(Color::Red),
-            Print("╔"),
-        )?;
+        execute!(stdout(), SetForegroundColor(Color::Red), Print("╔"),)?;
         for _ in 0..self.width - 2 {
             execute!(stdout(), Print("═"))?;
         }
@@ -63,11 +58,7 @@ impl Renderer {
         )?;
 
         // Draw game area border top
-        execute!(
-            stdout(),
-            SetForegroundColor(Color::DarkGrey),
-            Print("╠"),
-        )?;
+        execute!(stdout(), SetForegroundColor(Color::DarkGrey), Print("╠"),)?;
         for _ in 0..self.width - 2 {
             execute!(stdout(), Print("═"))?;
         }
@@ -143,8 +134,7 @@ impl Renderer {
                 }
 
                 // Draw borders
-                if !rendered
-                    && (x == 0 || x == game.width - 1 || y == 0 || y == game.height - 1) {
+                if !rendered && (x == 0 || x == game.width - 1 || y == 0 || y == game.height - 1) {
                     execute!(
                         stdout(),
                         SetForegroundColor(Color::DarkGrey),
@@ -170,11 +160,7 @@ impl Renderer {
         }
 
         // Draw bottom border of game area
-        execute!(
-            stdout(),
-            SetForegroundColor(Color::DarkGrey),
-            Print("╠"),
-        )?;
+        execute!(stdout(), SetForegroundColor(Color::DarkGrey), Print("╠"),)?;
         for _ in 0..self.width - 2 {
             execute!(stdout(), Print("═"))?;
         }
@@ -184,11 +170,7 @@ impl Renderer {
         self.render_stats(game)?;
 
         // Draw bottom border
-        execute!(
-            stdout(),
-            SetForegroundColor(Color::Red),
-            Print("╚"),
-        )?;
+        execute!(stdout(), SetForegroundColor(Color::Red), Print("╚"),)?;
         for _ in 0..self.width - 2 {
             execute!(stdout(), Print("═"))?;
         }
@@ -219,7 +201,10 @@ impl Renderer {
         // Pad the rest of the line
         let stats_text_len = format!(
             " HP: {}/{} | Scavenged: {}/3 | Turn: {}",
-            game.player.health, game.player.max_health, game.player.scavenged_items, game.turn_count
+            game.player.health,
+            game.player.max_health,
+            game.player.scavenged_items,
+            game.turn_count
         )
         .len();
         for _ in stats_text_len..(self.width as usize - 2) {
@@ -236,7 +221,8 @@ impl Renderer {
 
         // Combat mode indicator
         if let GameMode::Combat(idx) = game.mode
-            && idx < game.enemies.len() {
+            && idx < game.enemies.len()
+        {
             let enemy = &game.enemies[idx];
             execute!(
                 stdout(),
@@ -325,8 +311,10 @@ impl Renderer {
     fn render_victory(&self, game: &GameState) -> Result<()> {
         execute!(stdout(), cursor::MoveTo(0, 0))?;
 
-        let stats_line = format!("║          Final Stats: {} HP | {} turns             ║", 
-                game.player.health, game.turn_count);
+        let stats_line = format!(
+            "║          Final Stats: {} HP | {} turns             ║",
+            game.player.health, game.turn_count
+        );
 
         let victory_art = vec![
             "╔════════════════════════════════════════════════════════════╗",
@@ -384,8 +372,10 @@ impl Renderer {
     fn render_game_over(&self, game: &GameState) -> Result<()> {
         execute!(stdout(), cursor::MoveTo(0, 0))?;
 
-        let stats_line = format!("║          Survived {} turns | Scavenged: {}/3          ║",
-                game.turn_count, game.player.scavenged_items);
+        let stats_line = format!(
+            "║          Survived {} turns | Scavenged: {}/3          ║",
+            game.turn_count, game.player.scavenged_items
+        );
 
         let game_over_art = vec![
             "╔════════════════════════════════════════════════════════════╗",

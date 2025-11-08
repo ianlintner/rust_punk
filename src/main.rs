@@ -6,7 +6,7 @@ use std::io::Result;
 use std::time::Duration;
 
 use game::{GameMode, GameState};
-use ui::{cleanup_terminal, setup_terminal, Renderer};
+use ui::{Renderer, cleanup_terminal, setup_terminal};
 
 fn main() -> Result<()> {
     // Setup terminal
@@ -16,7 +16,7 @@ fn main() -> Result<()> {
     let width = 60;
     let height = 20;
     let mut game = GameState::new(width, height);
-    
+
     // Create renderer
     let renderer = Renderer::new(width as u16, height as u16);
 
@@ -36,7 +36,8 @@ fn game_loop(game: &mut GameState, renderer: &Renderer) -> Result<()> {
 
         // Handle input
         if event::poll(Duration::from_millis(100))?
-            && let Event::Key(key_event) = event::read()? {
+            && let Event::Key(key_event) = event::read()?
+        {
             match key_event.code {
                 KeyCode::Char('q') | KeyCode::Esc => {
                     break;
@@ -51,12 +52,13 @@ fn game_loop(game: &mut GameState, renderer: &Renderer) -> Result<()> {
         match game.mode {
             GameMode::Victory | GameMode::GameOver => {
                 renderer.render(game)?;
-                
+
                 // Wait for Q to quit
                 loop {
                     if event::poll(Duration::from_millis(100))?
                         && let Event::Key(key_event) = event::read()?
-                        && matches!(key_event.code, KeyCode::Char('q') | KeyCode::Esc) {
+                        && matches!(key_event.code, KeyCode::Char('q') | KeyCode::Esc)
+                    {
                         return Ok(());
                     }
                 }

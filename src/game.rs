@@ -129,6 +129,103 @@ impl Enemy {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_player_creation() {
+        let player = Player::new(10, 15);
+        assert_eq!(player.position.x, 10);
+        assert_eq!(player.position.y, 15);
+        assert_eq!(player.health, 100);
+        assert_eq!(player.max_health, 100);
+        assert!(player.is_alive());
+    }
+
+    #[test]
+    fn test_player_damage() {
+        let mut player = Player::new(0, 0);
+        player.take_damage(30);
+        assert_eq!(player.health, 70);
+        assert!(player.is_alive());
+
+        player.take_damage(80);
+        assert_eq!(player.health, 0);
+        assert!(!player.is_alive());
+    }
+
+    #[test]
+    fn test_player_healing() {
+        let mut player = Player::new(0, 0);
+        player.take_damage(50);
+        player.heal(20);
+        assert_eq!(player.health, 70);
+
+        // Cannot heal beyond max health
+        player.heal(100);
+        assert_eq!(player.health, 100);
+    }
+
+    #[test]
+    fn test_enemy_creation() {
+        let rat = Enemy::new_rat(5, 5);
+        assert_eq!(rat.health, 20);
+        assert_eq!(rat.attack, 3);
+        assert!(rat.is_alive);
+        assert_eq!(rat.get_char(), 'r');
+
+        let cat = Enemy::new_feral_cat(5, 5);
+        assert_eq!(cat.health, 35);
+        assert_eq!(cat.attack, 7);
+        assert_eq!(cat.get_char(), 'c');
+
+        let punk = Enemy::new_rival_punk(5, 5);
+        assert_eq!(punk.health, 50);
+        assert_eq!(punk.attack, 10);
+        assert_eq!(punk.get_char(), 'P');
+    }
+
+    #[test]
+    fn test_enemy_damage() {
+        let mut enemy = Enemy::new_rat(0, 0);
+        enemy.take_damage(10);
+        assert_eq!(enemy.health, 10);
+        assert!(enemy.is_alive);
+
+        enemy.take_damage(15);
+        assert_eq!(enemy.health, 0);
+        assert!(!enemy.is_alive);
+    }
+
+    #[test]
+    fn test_position_distance() {
+        let pos1 = Position::new(0, 0);
+        let pos2 = Position::new(3, 4);
+        assert_eq!(pos1.distance_to(&pos2), 5.0);
+    }
+
+    #[test]
+    fn test_game_state_initialization() {
+        let game = GameState::new(60, 20);
+        assert_eq!(game.width, 60);
+        assert_eq!(game.height, 20);
+        assert!(game.player.is_alive());
+        assert_eq!(game.player.scavenged_items, 0);
+        assert_eq!(game.dumpsters.len(), 3);
+        assert!(game.enemies.len() > 0);
+        assert_eq!(game.mode, GameMode::Exploring);
+    }
+
+    #[test]
+    fn test_dumpster_creation() {
+        let dumpster = Dumpster::new(10, 10);
+        assert_eq!(dumpster.position.x, 10);
+        assert_eq!(dumpster.position.y, 10);
+        assert!(dumpster.has_items);
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Dumpster {
     pub position: Position,
@@ -166,34 +263,34 @@ pub struct GameState {
 impl GameState {
     pub fn new(width: i32, height: i32) -> Self {
         let mut rng = rand::thread_rng();
-        
+
         // Player starts near the bottom center
         let player = Player::new(width / 2, height - 3);
-        
+
         // Create dumpsters in the top area (behind the burger place)
         let mut dumpsters = Vec::new();
         for i in 0..3 {
             dumpsters.push(Dumpster::new(width / 4 + i * (width / 4), 3));
         }
-        
+
         // Create enemies scattered around
         let mut enemies = Vec::new();
-        
+
         // Add some rats
         for _ in 0..3 {
             let x = rng.gen_range(5..width - 5);
             let y = rng.gen_range(5..height - 5);
             enemies.push(Enemy::new_rat(x, y));
         }
-        
+
         // Add a feral cat
         let x = rng.gen_range(5..width - 5);
         let y = rng.gen_range(5..height / 2);
         enemies.push(Enemy::new_feral_cat(x, y));
-        
+
         // Add a rival punk near the dumpsters
         enemies.push(Enemy::new_rival_punk(width / 2 + 5, 5));
-        
+
         GameState {
             player,
             enemies,
@@ -240,17 +337,20 @@ impl GameState {
         }
 
         // Boundary check
-        if new_pos.x >= 1 && new_pos.x < self.width - 1 
-           && new_pos.y >= 1 && new_pos.y < self.height - 1 {
+        if new_pos.x >= 1
+            && new_pos.x < self.width - 1
+            && new_pos.y >= 1
+            && new_pos.y < self.height - 1
+        {
             self.player.position = new_pos;
             self.turn_count += 1;
-            
+
             // Check for dumpster interaction
             self.check_dumpster_scavenge();
-            
+
             // Check for enemy encounters
             self.check_enemy_encounters();
-            
+
             // Move enemies towards player
             self.move_enemies();
         }
@@ -261,20 +361,17 @@ impl GameState {
             KeyCode::Char(' ') | KeyCode::Enter => {
                 if enemy_idx < self.enemies.len() && self.enemies[enemy_idx].is_alive {
                     let damage = self.player.attack;
-                    
+
                     // Take damage first
                     let enemy = &mut self.enemies[enemy_idx];
                     enemy.take_damage(damage);
                     let enemy_type = enemy.enemy_type.clone();
                     let enemy_is_alive = enemy.is_alive;
                     let enemy_damage = enemy.attack;
-                    
+
                     // Add message about player attack
-                    self.add_message(format!(
-                        "You attack {} for {} damage!",
-                        enemy_type, damage
-                    ));
-                    
+                    self.add_message(format!("You attack {} for {} damage!", enemy_type, damage));
+
                     if !enemy_is_alive {
                         self.add_message(format!("{} defeated!", enemy_type));
                         self.mode = GameMode::Exploring;
@@ -285,7 +382,7 @@ impl GameState {
                             "{} attacks you for {} damage!",
                             enemy_type, enemy_damage
                         ));
-                        
+
                         if !self.player.is_alive() {
                             self.mode = GameMode::GameOver;
                             self.add_message("You have been defeated!".to_string());
@@ -299,10 +396,10 @@ impl GameState {
                 let enemy = &self.enemies[enemy_idx];
                 let dx = self.player.position.x - enemy.position.x;
                 let dy = self.player.position.y - enemy.position.y;
-                
+
                 let new_x = (self.player.position.x + dx.signum()).clamp(1, self.width - 2);
                 let new_y = (self.player.position.y + dy.signum()).clamp(1, self.height - 2);
-                
+
                 self.player.position = Position::new(new_x, new_y);
                 self.mode = GameMode::Exploring;
             }
@@ -313,28 +410,29 @@ impl GameState {
     fn check_dumpster_scavenge(&mut self) {
         let player_pos = self.player.position;
         let mut scavenged = false;
-        
+
         for dumpster in &mut self.dumpsters {
             if dumpster.position.x == player_pos.x
-               && dumpster.position.y == player_pos.y
-               && dumpster.has_items {
+                && dumpster.position.y == player_pos.y
+                && dumpster.has_items
+            {
                 dumpster.has_items = false;
                 scavenged = true;
                 break;
             }
         }
-        
+
         if scavenged {
             self.player.scavenged_items += 1;
             self.add_message(format!(
                 "Scavenged dumpster! ({}/3)",
                 self.player.scavenged_items
             ));
-            
+
             // Heal player a bit
             self.player.heal(20);
             self.add_message("Found some food! Health restored.".to_string());
-            
+
             // Check for victory
             if self.player.scavenged_items >= 3 {
                 self.mode = GameMode::Victory;
@@ -346,8 +444,9 @@ impl GameState {
     fn check_enemy_encounters(&mut self) {
         for (idx, enemy) in self.enemies.iter().enumerate() {
             if enemy.is_alive
-               && enemy.position.x == self.player.position.x
-               && enemy.position.y == self.player.position.y {
+                && enemy.position.x == self.player.position.x
+                && enemy.position.y == self.player.position.y
+            {
                 self.mode = GameMode::Combat(idx);
                 self.add_message(format!(
                     "Encountered {}! Space to attack, R to retreat.",
@@ -360,18 +459,18 @@ impl GameState {
 
     fn move_enemies(&mut self) {
         let player_pos = self.player.position;
-        
+
         for enemy in &mut self.enemies {
             if !enemy.is_alive {
                 continue;
             }
-            
+
             // Simple AI: move towards player if within range
             let distance = enemy.position.distance_to(&player_pos);
             if distance < 10.0 && distance > 1.0 {
                 let dx = (player_pos.x - enemy.position.x).signum();
                 let dy = (player_pos.y - enemy.position.y).signum();
-                
+
                 // 50% chance to move each turn
                 let mut rng = rand::thread_rng();
                 if rng.gen_bool(0.5) {
