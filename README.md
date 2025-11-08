@@ -10,7 +10,7 @@ Fight rats and rival punks for dumpster scavenge rights behind a "Legally Distin
 cargo run --release
 ```
 
-Use WASD to move, Space to attack, Q to quit. Scavenge all 3 dumpsters to win!
+Use WASD to move, Space to attack, E to use items, Q to quit. Scavenge all 3 dumpsters and find bolt cutters to escape!
 
 ## Game Features
 
@@ -19,12 +19,16 @@ Use WASD to move, Space to attack, Q to quit. Scavenge all 3 dumpsters to win!
 - 🗑️ Scavenge dumpsters for survival
 - ⚔️ Turn-based combat system
 - 🐀 Multiple enemy types (Rats, Feral Cats, Rival Punks)
+- 🎒 Inventory system with weapons, armor, and consumables
+- 🎲 Roguelike random item generation with rarity system
+- 🔧 Find bolt cutters to unlock the exit
+- 💊 Consumable items with healing and buff effects
 - 🎨 ASCII/Character-based graphics
 - 🏆 Victory and defeat conditions
 
 ## About
 
-*Rust Punk* is a play on "Crust Punk" - a terminal game where you fight over scavenge rights in a dystopian future. Navigate the dangerous area behind a burger joint, battle hostile creatures and rival scavengers, and secure your prize: three precious dumpsters full of valuable trash!
+*Rust Punk* is a play on "Crust Punk" - a terminal game where you fight over scavenge rights in a dystopian future. Navigate the dangerous area behind a burger joint, battle hostile creatures and rival scavengers, collect weapons and armor, and secure your prize: three precious dumpsters full of valuable trash! Find the bolt cutters to unlock the exit and escape with your haul.
 
 See [GAMEPLAY.md](GAMEPLAY.md) for detailed instructions and strategy tips.
 
