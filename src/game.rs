@@ -375,6 +375,8 @@ impl GameState {
             KeyCode::Char('e') => {
                 // Use consumable
                 self.use_consumable();
+                self.turn_count += 1;
+                self.player.inventory.update_turn();
                 return;
             }
             _ => return,
