@@ -3,7 +3,7 @@
 
 set -e
 
-echo "Building rust_punk..."
+echo "Building rust-punk..."
 cargo build --release
 
 echo "Attempting to capture game screenshot..."
