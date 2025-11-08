@@ -467,6 +467,66 @@ impl GameState {
         }
     }
 
+    fn try_pickup_weapon(
+        dumpster_slot: &mut Option<Weapon>,
+        inventory_slot: &mut Option<Weapon>,
+        found_items: &mut Vec<String>,
+    ) -> bool {
+        if let Some(weapon) = dumpster_slot.take() {
+            if inventory_slot.is_some() {
+                found_items.push(format!("Found {} but weapon slot full!", weapon.name));
+                *dumpster_slot = Some(weapon); // Put it back
+                false
+            } else {
+                found_items.push(format!("Found {}! (+{} damage)", weapon.name, weapon.damage_bonus));
+                *inventory_slot = Some(weapon);
+                true
+            }
+        } else {
+            false
+        }
+    }
+
+    fn try_pickup_armor(
+        dumpster_slot: &mut Option<Armor>,
+        inventory_slot: &mut Option<Armor>,
+        found_items: &mut Vec<String>,
+    ) -> bool {
+        if let Some(armor) = dumpster_slot.take() {
+            if inventory_slot.is_some() {
+                found_items.push(format!("Found {} but armor slot full!", armor.name));
+                *dumpster_slot = Some(armor); // Put it back
+                false
+            } else {
+                found_items.push(format!("Found {}! (+{} defense)", armor.name, armor.defense_bonus));
+                *inventory_slot = Some(armor);
+                true
+            }
+        } else {
+            false
+        }
+    }
+
+    fn try_pickup_consumable(
+        dumpster_slot: &mut Option<Consumable>,
+        inventory_slot: &mut Option<Consumable>,
+        found_items: &mut Vec<String>,
+    ) -> bool {
+        if let Some(consumable) = dumpster_slot.take() {
+            if inventory_slot.is_some() {
+                found_items.push(format!("Found {} but consumable slot full!", consumable.name));
+                *dumpster_slot = Some(consumable); // Put it back
+                false
+            } else {
+                found_items.push(format!("Found {}! (Press E to use)", consumable.name));
+                *inventory_slot = Some(consumable);
+                true
+            }
+        } else {
+            false
+        }
+    }
+
     fn check_dumpster_scavenge(&mut self) {
         let player_pos = self.player.position;
         let mut scavenged = false;
@@ -489,34 +549,32 @@ impl GameState {
                 }
                 
                 // Pick up weapon if slot is empty
-                if let Some(weapon) = dumpster.item_weapon.take() {
-                    if self.player.inventory.weapon.is_some() {
-                        found_items.push(format!("Found {} but weapon slot full!", weapon.name));
-                Self::pickup_item(
+                if Self::try_pickup_weapon(
                     &mut dumpster.item_weapon,
                     &mut self.player.inventory.weapon,
-                    |item| format!("Found {}! (+{} damage)", item.name, item.damage_bonus),
-                    |item| format!("Found {} but weapon slot full!", item.name),
                     &mut found_items,
-                );
+                ) {
+                    items_picked_up = true;
+                }
 
                 // Pick up armor if slot is empty
-                Self::pickup_item(
+                if Self::try_pickup_armor(
                     &mut dumpster.item_armor,
                     &mut self.player.inventory.armor,
-                    |item| format!("Found {}! (+{} defense)", item.name, item.defense_bonus),
-                    |item| format!("Found {} but armor slot full!", item.name),
                     &mut found_items,
-                );
+                ) {
+                    items_picked_up = true;
+                }
 
                 // Pick up consumable if slot is empty
-                Self::pickup_item(
+                if Self::try_pickup_consumable(
                     &mut dumpster.item_consumable,
                     &mut self.player.inventory.consumable,
-                    |item| format!("Found {}! (Press E to use)", item.name),
-                    |item| format!("Found {} but consumable slot full!", item.name),
                     &mut found_items,
-                );
+                ) {
+                    items_picked_up = true;
+                }
+                
                 // Only mark as scavenged if at least one item was picked up or no items remain
                 let has_remaining_items = dumpster.item_weapon.is_some() 
                     || dumpster.item_armor.is_some() 
