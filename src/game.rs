@@ -1,7 +1,7 @@
+use crate::items::{Armor, Consumable, Inventory, Weapon};
 use crossterm::event::{KeyCode, KeyEvent};
 use rand::Rng;
 use std::fmt;
-use crate::items::{Armor, Consumable, Inventory, Weapon};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Position {
@@ -54,7 +54,7 @@ impl Player {
     pub fn heal(&mut self, amount: i32) {
         self.health = (self.health + amount).min(self.max_health);
     }
-    
+
     pub fn total_attack(&self) -> i32 {
         self.attack + self.inventory.total_damage_bonus()
     }
@@ -248,22 +248,34 @@ pub struct Dumpster {
 impl Dumpster {
     pub fn new(x: i32, y: i32) -> Self {
         let mut rng = rand::thread_rng();
-        
+
         // Generate random items for this dumpster
         let has_weapon = rng.gen_bool(0.7);
         let has_armor = rng.gen_bool(0.7);
         let has_consumable = rng.gen_bool(0.8);
-        
+
         Dumpster {
             position: Position::new(x, y),
             has_items: true,
-            item_weapon: if has_weapon { Some(Weapon::random_generate()) } else { None },
-            item_armor: if has_armor { Some(Armor::random_generate()) } else { None },
-            item_consumable: if has_consumable { Some(Consumable::random_generate()) } else { None },
+            item_weapon: if has_weapon {
+                Some(Weapon::random_generate())
+            } else {
+                None
+            },
+            item_armor: if has_armor {
+                Some(Armor::random_generate())
+            } else {
+                None
+            },
+            item_consumable: if has_consumable {
+                Some(Consumable::random_generate())
+            } else {
+                None
+            },
             has_bolt_cutters: false,
         }
     }
-    
+
     pub fn new_with_bolt_cutters(x: i32, y: i32) -> Self {
         let mut dumpster = Self::new(x, y);
         dumpster.has_bolt_cutters = true;
@@ -390,7 +402,7 @@ impl GameState {
         {
             self.player.position = new_pos;
             self.turn_count += 1;
-            
+
             // Update inventory turn effects
             self.player.inventory.update_turn();
 
@@ -431,7 +443,7 @@ impl GameState {
                         // Enemy counterattacks
                         let defense_bonus = self.player.inventory.total_defense_bonus();
                         self.player.take_damage(enemy_damage);
-                        
+
                         let actual_damage = (enemy_damage - defense_bonus).max(1);
                         self.add_message(format!(
                             "{} attacks you for {} damage! (Reduced by {})",
@@ -478,7 +490,10 @@ impl GameState {
                 *dumpster_slot = Some(weapon); // Put it back
                 false
             } else {
-                found_items.push(format!("Found {}! (+{} damage)", weapon.name, weapon.damage_bonus));
+                found_items.push(format!(
+                    "Found {}! (+{} damage)",
+                    weapon.name, weapon.damage_bonus
+                ));
                 *inventory_slot = Some(weapon);
                 true
             }
@@ -498,7 +513,10 @@ impl GameState {
                 *dumpster_slot = Some(armor); // Put it back
                 false
             } else {
-                found_items.push(format!("Found {}! (+{} defense)", armor.name, armor.defense_bonus));
+                found_items.push(format!(
+                    "Found {}! (+{} defense)",
+                    armor.name, armor.defense_bonus
+                ));
                 *inventory_slot = Some(armor);
                 true
             }
@@ -514,7 +532,10 @@ impl GameState {
     ) -> bool {
         if let Some(consumable) = dumpster_slot.take() {
             if inventory_slot.is_some() {
-                found_items.push(format!("Found {} but consumable slot full!", consumable.name));
+                found_items.push(format!(
+                    "Found {} but consumable slot full!",
+                    consumable.name
+                ));
                 *dumpster_slot = Some(consumable); // Put it back
                 false
             } else {
@@ -539,7 +560,7 @@ impl GameState {
                 && dumpster.has_items
             {
                 scavenged = true;
-                
+
                 // Check for bolt cutters first
                 if dumpster.has_bolt_cutters {
                     self.player.inventory.bolt_cutters.found = true;
@@ -547,7 +568,7 @@ impl GameState {
                     dumpster.has_bolt_cutters = false;
                     items_picked_up = true;
                 }
-                
+
                 // Pick up weapon if slot is empty
                 if Self::try_pickup_weapon(
                     &mut dumpster.item_weapon,
@@ -574,17 +595,17 @@ impl GameState {
                 ) {
                     items_picked_up = true;
                 }
-                
+
                 // Only mark as scavenged if at least one item was picked up or no items remain
-                let has_remaining_items = dumpster.item_weapon.is_some() 
-                    || dumpster.item_armor.is_some() 
+                let has_remaining_items = dumpster.item_weapon.is_some()
+                    || dumpster.item_armor.is_some()
                     || dumpster.item_consumable.is_some()
                     || dumpster.has_bolt_cutters;
-                
+
                 if items_picked_up || !has_remaining_items {
                     dumpster.has_items = false;
                 }
-                
+
                 break;
             }
         }
@@ -599,7 +620,7 @@ impl GameState {
             // Heal player a bit
             self.player.heal(20);
             self.add_message("Found some food! Health restored.".to_string());
-            
+
             // Add all found items messages
             for item_msg in found_items {
                 self.add_message(item_msg);
@@ -658,10 +679,10 @@ impl GameState {
             }
         }
     }
-    
+
     fn check_chain_interaction(&mut self) {
-        if self.player.position.x == self.chain_position.x 
-            && self.player.position.y == self.chain_position.y 
+        if self.player.position.x == self.chain_position.x
+            && self.player.position.y == self.chain_position.y
             && self.mode == GameMode::LevelComplete
         {
             if self.player.inventory.bolt_cutters.found {
@@ -672,7 +693,7 @@ impl GameState {
             }
         }
     }
-    
+
     fn handle_level_complete_input(&mut self, key: KeyEvent) {
         // In level complete mode, player can still move around
         let old_pos = self.player.position;
@@ -700,10 +721,10 @@ impl GameState {
             self.check_chain_interaction();
         }
     }
-    
+
     fn use_consumable(&mut self) {
         use crate::items::ConsumableEffect;
-        
+
         if let Some((effect, name)) = self.player.inventory.use_consumable() {
             match effect {
                 ConsumableEffect::Heal(amount) => {
@@ -711,10 +732,16 @@ impl GameState {
                     self.add_message(format!("Used {}! Healed {} HP", name, amount));
                 }
                 ConsumableEffect::DamageBoost(amount, duration) => {
-                    self.add_message(format!("Used {}! +{} damage for {} turns", name, amount, duration));
+                    self.add_message(format!(
+                        "Used {}! +{} damage for {} turns",
+                        name, amount, duration
+                    ));
                 }
                 ConsumableEffect::DefenseBoost(amount, duration) => {
-                    self.add_message(format!("Used {}! +{} defense for {} turns", name, amount, duration));
+                    self.add_message(format!(
+                        "Used {}! +{} defense for {} turns",
+                        name, amount, duration
+                    ));
                 }
             }
         } else {
