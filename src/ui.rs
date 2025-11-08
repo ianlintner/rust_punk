@@ -312,7 +312,7 @@ impl Renderer {
             Print(" = Dump | ⛓ = Exit | E = Use Item"),
         )?;
 
-        let legend_len = " @ = You | r = Rat | c = Cat | P = Punk | ▓ = Dump | ⛓ = Exit | E = Use Item".len();
+        let legend_len = " @ = You | r = Rat | c = Cat | P = Punk | ▓ = Dump | ⛓ = Exit | E = Use Item".chars().count();
         for _ in legend_len..(self.width as usize - 2) {
             execute!(stdout(), Print(" "))?;
         }
