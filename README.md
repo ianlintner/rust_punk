@@ -1,2 +1,51 @@
 # rust_punk
-Rust CLI/Curses Game fighting over dumpster scavenge rights in a dystopian future.
+
+**Rust Punk** - A CLI/Curses Roguelike Game
+
+Fight rats and rival punks for dumpster scavenge rights behind a "Legally Distinct Burger Place" in this dystopian terminal adventure!
+
+## Quick Start
+
+```bash
+cargo run --release
+```
+
+Use WASD to move, Space to attack, Q to quit. Scavenge all 3 dumpsters to win!
+
+## Game Features
+
+- 🎮 Terminal-based roguelike/lite gameplay
+- ⌨️ Keyboard controls (WASD + Space/Enter)
+- 🗑️ Scavenge dumpsters for survival
+- ⚔️ Turn-based combat system
+- 🐀 Multiple enemy types (Rats, Feral Cats, Rival Punks)
+- 🎨 ASCII/Character-based graphics
+- 🏆 Victory and defeat conditions
+
+## About
+
+*Rust Punk* is a play on "Crust Punk" - a terminal game where you fight over scavenge rights in a dystopian future. Navigate the dangerous area behind a burger joint, battle hostile creatures and rival scavengers, and secure your prize: three precious dumpsters full of valuable trash!
+
+See [GAMEPLAY.md](GAMEPLAY.md) for detailed instructions and strategy tips.
+
+## Build & Run
+
+```bash
+# Build
+cargo build --release
+
+# Run
+cargo run --release
+
+# Check
+cargo check
+```
+
+## Dependencies
+
+- `crossterm` - Cross-platform terminal manipulation
+- `rand` - Random number generation
+
+## License
+
+MIT (or your preferred license)
