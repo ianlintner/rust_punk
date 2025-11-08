@@ -461,6 +461,7 @@ impl GameState {
             KeyCode::Char('e') => {
                 // Use consumable during combat
                 self.use_consumable();
+                self.player.inventory.update_turn();
             }
             _ => {}
         }
