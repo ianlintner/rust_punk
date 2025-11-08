@@ -29,6 +29,7 @@ impl Renderer {
         match game.mode {
             GameMode::Victory => self.render_victory(game),
             GameMode::GameOver => self.render_game_over(game),
+            GameMode::LevelComplete => self.render_game_world(game),
             _ => self.render_game_world(game),
         }
     }
@@ -131,6 +132,22 @@ impl Renderer {
                             break;
                         }
                     }
+                }
+
+                // Draw chain (exit)
+                if !rendered && game.chain_position.x == x && game.chain_position.y == y {
+                    let chain_color = if game.player.inventory.bolt_cutters.found {
+                        Color::Green
+                    } else {
+                        Color::Yellow
+                    };
+                    execute!(
+                        stdout(),
+                        SetForegroundColor(chain_color),
+                        Print("⛓"),
+                        ResetColor
+                    )?;
+                    rendered = true;
                 }
 
                 // Draw borders
@@ -254,6 +271,9 @@ impl Renderer {
             )?;
         }
 
+        // Inventory display
+        self.render_inventory(game)?;
+
         // Messages
         for msg in &game.messages {
             execute!(
@@ -289,11 +309,136 @@ impl Renderer {
             SetForegroundColor(Color::Cyan),
             Print("▓"),
             ResetColor,
-            Print(" = Dumpster"),
+            Print(" = Dump | ⛓ = Exit | E = Use Item"),
         )?;
 
-        let legend_len = " @ = You | r = Rat | c = Cat | P = Punk | ▓ = Dumpster".len();
+        let legend_len =
+            " @ = You | r = Rat | c = Cat | P = Punk | ▓ = Dump | ⛓ = Exit | E = Use Item"
+                .chars()
+                .count();
         for _ in legend_len..(self.width as usize - 2) {
+            execute!(stdout(), Print(" "))?;
+        }
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print("\r\n")
+        )?;
+
+        Ok(())
+    }
+
+    fn render_inventory(&self, game: &GameState) -> Result<()> {
+        let inv = &game.player.inventory;
+
+        // Weapon slot
+        let weapon_text = if let Some(weapon) = &inv.weapon {
+            format!("Weapon: {} (+{})", weapon.name, weapon.damage_bonus)
+        } else {
+            "Weapon: [Empty]".to_string()
+        };
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print(" "),
+            Print(&weapon_text),
+        )?;
+
+        let text_len = weapon_text.chars().count() + 1;
+        for _ in text_len..(self.width as usize - 2) {
+            execute!(stdout(), Print(" "))?;
+        }
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print("\r\n")
+        )?;
+
+        // Armor slot
+        let armor_text = if let Some(armor) = &inv.armor {
+            format!("Armor: {} (+{})", armor.name, armor.defense_bonus)
+        } else {
+            "Armor: [Empty]".to_string()
+        };
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print(" "),
+            Print(&armor_text),
+        )?;
+
+        let text_len = armor_text.chars().count() + 1;
+        for _ in text_len..(self.width as usize - 2) {
+            execute!(stdout(), Print(" "))?;
+        }
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print("\r\n")
+        )?;
+
+        // Consumable slot
+        let consumable_text = if let Some(consumable) = &inv.consumable {
+            format!("Consumable: {} (E to use)", consumable.name)
+        } else {
+            "Consumable: [Empty]".to_string()
+        };
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print(" "),
+            Print(&consumable_text),
+        )?;
+
+        let text_len = consumable_text.chars().count() + 1;
+        for _ in text_len..(self.width as usize - 2) {
+            execute!(stdout(), Print(" "))?;
+        }
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print("\r\n")
+        )?;
+
+        // Bolt cutters status
+        let cutters_text = if inv.bolt_cutters.found {
+            "Bolt Cutters: ✓ Found!".to_string()
+        } else {
+            "Bolt Cutters: ✗ Not found".to_string()
+        };
+
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("║"),
+            ResetColor,
+            Print(" "),
+            Print(&cutters_text),
+        )?;
+
+        let text_len = cutters_text.chars().count() + 1;
+        for _ in text_len..(self.width as usize - 2) {
             execute!(stdout(), Print(" "))?;
         }
 
