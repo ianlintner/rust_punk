@@ -492,38 +492,31 @@ impl GameState {
                 if let Some(weapon) = dumpster.item_weapon.take() {
                     if self.player.inventory.weapon.is_some() {
                         found_items.push(format!("Found {} but weapon slot full!", weapon.name));
-                        dumpster.item_weapon = Some(weapon); // Put it back
-                    } else {
-                        found_items.push(format!("Found {}! (+{} damage)", weapon.name, weapon.damage_bonus));
-                        self.player.inventory.weapon = Some(weapon);
-                        items_picked_up = true;
-                    }
-                }
-                
+                Self::pickup_item(
+                    &mut dumpster.item_weapon,
+                    &mut self.player.inventory.weapon,
+                    |item| format!("Found {}! (+{} damage)", item.name, item.damage_bonus),
+                    |item| format!("Found {} but weapon slot full!", item.name),
+                    &mut found_items,
+                );
+
                 // Pick up armor if slot is empty
-                if let Some(armor) = dumpster.item_armor.take() {
-                    if self.player.inventory.armor.is_some() {
-                        found_items.push(format!("Found {} but armor slot full!", armor.name));
-                        dumpster.item_armor = Some(armor); // Put it back
-                    } else {
-                        found_items.push(format!("Found {}! (+{} defense)", armor.name, armor.defense_bonus));
-                        self.player.inventory.armor = Some(armor);
-                        items_picked_up = true;
-                    }
-                }
-                
+                Self::pickup_item(
+                    &mut dumpster.item_armor,
+                    &mut self.player.inventory.armor,
+                    |item| format!("Found {}! (+{} defense)", item.name, item.defense_bonus),
+                    |item| format!("Found {} but armor slot full!", item.name),
+                    &mut found_items,
+                );
+
                 // Pick up consumable if slot is empty
-                if let Some(consumable) = dumpster.item_consumable.take() {
-                    if self.player.inventory.consumable.is_some() {
-                        found_items.push(format!("Found {} but consumable slot full!", consumable.name));
-                        dumpster.item_consumable = Some(consumable); // Put it back
-                    } else {
-                        found_items.push(format!("Found {}! (Press E to use)", consumable.name));
-                        self.player.inventory.consumable = Some(consumable);
-                        items_picked_up = true;
-                    }
-                }
-                
+                Self::pickup_item(
+                    &mut dumpster.item_consumable,
+                    &mut self.player.inventory.consumable,
+                    |item| format!("Found {}! (Press E to use)", item.name),
+                    |item| format!("Found {} but consumable slot full!", item.name),
+                    &mut found_items,
+                );
                 // Only mark as scavenged if at least one item was picked up or no items remain
                 let has_remaining_items = dumpster.item_weapon.is_some() 
                     || dumpster.item_armor.is_some() 
