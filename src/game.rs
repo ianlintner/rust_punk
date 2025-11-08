@@ -611,6 +611,10 @@ impl GameState {
             KeyCode::Char('s') | KeyCode::Down => new_pos.y += 1,
             KeyCode::Char('a') | KeyCode::Left => new_pos.x -= 1,
             KeyCode::Char('d') | KeyCode::Right => new_pos.x += 1,
+            KeyCode::Char('e') => {
+                self.use_consumable();
+                return;
+            }
             _ => return,
         }
 
